@@ -56,6 +56,7 @@ public class RoboBoid {
 	        
 	        average.fetchSample(sampleAvg, 0); // sounds helpful
 			
+	        
 	        //TODO: use all iterations
 	        for (int i = 0; i < sample.length/2; i++) {
 	        	float direction = sample[i*2];
