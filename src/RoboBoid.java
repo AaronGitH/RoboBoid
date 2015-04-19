@@ -48,8 +48,7 @@ public class RoboBoid {
 		
 
     public void run(){
-    	
-    	
+    	    	
 		while(Button.getButtons() != Button.ID_ESCAPE){
 			
 			seek.fetchSample(sample, 0);
@@ -64,7 +63,7 @@ public class RoboBoid {
 	        	
 	        	//TODO: Add crazy math stuff here!!!
 	        	speedLeft = 250;
-		        speedRight = 250; 
+		        speedRight = 250;
 	        	if(direction < -4.0) {
 	        		speedLeft = 300;
 			        speedRight = 100; 

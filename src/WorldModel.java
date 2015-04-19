@@ -1,15 +1,17 @@
 
 public class WorldModel {
 	
-	// this is just a class to get access to the features of the world
+	// find out about our neighboors.
+	private float[] getCenterPoint;
 	
+
 	
+	public WorldModel(){
 	
-	private int[] speedOfRobots;
-	//private centerPoint;
-	
-	
-	public int speedofRobot(int id){
-		return 0;
+		
 	}
+	
+	
+	
+
 }
