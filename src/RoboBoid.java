@@ -48,6 +48,8 @@ public class RoboBoid {
 		
 
     public void run(){
+    	WorldModel world = new WorldModel(seek);
+    	float[] centerPoint = world.getCenterPoint();
     	    	
 		while(Button.getButtons() != Button.ID_ESCAPE){
 			
