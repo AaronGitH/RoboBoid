@@ -13,30 +13,43 @@ import lejos.robotics.filter.MeanFilter;
 import lejos.utility.Delay;
 
 
-public class Test {
+public class RoboBoid {
 	
-	public static void main(String[] args) {
+	private SampleProvider seek;
+    private float[] sample;
+    
+    private SampleProvider average;
+    private float[] sampleAvg;
+    
+	private RegulatedMotor motorLeft;
+	private RegulatedMotor motorRight;
+    private int speedLeft;
+    private int speedRight;
+
+	
+	public RoboBoid(){
 		
 		Port port = LocalEV3.get().getPort("S2");
-        @SuppressWarnings("resource")
+	    @SuppressWarnings("resource")
 		SensorModes sensor = new EV3IRSensor(port);
-        SampleProvider seek = sensor.getMode("Seek");
-        float[] sample = new float[seek.sampleSize()];
-        
-        SampleProvider average = new MeanFilter(seek, 5);
-        float[] sampleAvg = new float[average.sampleSize()];
-        
-        
-		RegulatedMotor motorLeft = new EV3LargeRegulatedMotor(MotorPort.D);
-		RegulatedMotor motorRight = new EV3LargeRegulatedMotor(MotorPort.A);
-        int speedLeft = 300;  // value in degrees/sec, MAX=~ 900
-        int speedRight = 300;
-        motorLeft.setSpeed(speedLeft);
-        motorRight.setSpeed(speedRight);
-        motorLeft.forward();
-        motorRight.forward();
+	    seek = sensor.getMode("Seek");
+	    sample = new float[seek.sampleSize()];
+	    
+	    average = new MeanFilter(seek, 5);
+	    sampleAvg = new float[average.sampleSize()];
+	    
+		motorLeft = new EV3LargeRegulatedMotor(MotorPort.D);
+		motorRight = new EV3LargeRegulatedMotor(MotorPort.A);
+	    speedLeft = 300;  // value in degrees/sec, MAX=~ 900
+	    speedRight = 300;
+	}
+		
+		
+		
 
-        
+    public void run(){
+    	
+    	
 		while(Button.getButtons() != Button.ID_ESCAPE){
 			
 			seek.fetchSample(sample, 0);
@@ -73,25 +86,37 @@ public class Test {
 	        motorRight.forward(); 
 		
 	        
-			LCD.clear();
-			LCD.drawString("IR Seeker ", 0, 0);
-			for (int i = 0; i < sample.length/2; i++) {
-				LCD.drawString(i+1+ ": " + sample[i*2] + ", " + sample[(i*2)+1], 0, 1 + i);
-			}
-			LCD.drawString("Motor Speed", 0, 6);
-			LCD.drawString("L: " + speedLeft + "  R: " + speedRight, 0, 7);
+	        printSensorAndActuatorValues();
 			
-			//LCD.refresh(); // do not use, not working well
-			//LCD.setAutoRefresh(true);
-	        //LCD.setAutoRefreshPeriod(1000);
-			
-	        Delay.msDelay(100);
+	        programFlow();
 		}
 		
+    }
+    
+    public void programFlow(){
+    	//TODO: this could be made more advanced (maybe)
+    	Delay.msDelay(100);
+    }
+    
+    public void printSensorAndActuatorValues(){    
+		LCD.clear();
+		LCD.drawString("IR Seeker ", 0, 0);
+		for (int i = 0; i < sample.length/2; i++) {
+			LCD.drawString(i+1+ ": " + sample[i*2] + ", " + sample[(i*2)+1], 0, 1 + i);
+		}
+		LCD.drawString("Motor Speed", 0, 6);
+		LCD.drawString("L: " + speedLeft + "  R: " + speedRight, 0, 7);
+		
+		//LCD.refresh(); // do not use, not working well
+		//LCD.setAutoRefresh(true);
+	    //LCD.setAutoRefreshPeriod(1000);
+	}
+    
+    public void close(){
 		motorLeft.stop();
         motorRight.stop();
         motorLeft.close();
         motorRight.close();
-	}
+    }
 
 }
