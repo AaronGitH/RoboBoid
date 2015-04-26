@@ -12,7 +12,6 @@ import lejos.robotics.SampleProvider;
 import lejos.robotics.filter.MeanFilter;
 import lejos.utility.Delay;
 
-
 public class RoboBoid {
 	
 	private SampleProvider seek;
@@ -20,6 +19,8 @@ public class RoboBoid {
     
     private SampleProvider average;
     private float[] sampleAvg;
+   
+	WorldModel worldModel = new WorldModel();
     
 	private RegulatedMotor motorLeft;
 	private RegulatedMotor motorRight;
@@ -48,15 +49,14 @@ public class RoboBoid {
 		
 
     public void run(){
-    	WorldModel world = new WorldModel(sample);
-    	float[] centerPoint = world.getCenterPoint();
     	    	
 		while(Button.getButtons() != Button.ID_ESCAPE){
 			
 			seek.fetchSample(sample, 0);
 	        
 	        average.fetchSample(sampleAvg, 0); // sounds helpful
-			
+
+	    	AveragePoint center = worldModel.getCenterPoint(sampleAvg);
 	        
 	        //TODO: use all iterations
 	        for (int i = 0; i < sample.length/2; i++) {
