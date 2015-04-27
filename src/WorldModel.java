@@ -1,11 +1,7 @@
-
 public class WorldModel {
 
 	// find out about our neighbors.
-	private float[] centerPoint;
-
 	public WorldModel(){	
-		this.centerPoint = new float[]{0,0};
 	}
 	
 	/**
@@ -17,25 +13,27 @@ public class WorldModel {
 	public AveragePoint getCenterPoint(float[] sampleValues){
 		float avgDirection = 0;
 		float avgDistance = 0;
+		int count = 0;
 		
 		for (int i = 0; i < sampleValues.length/2; ++i) {
 			
 			//TODO: Add checks for when values are out of range
         	float direction = sampleValues[i*2];
         	float distance = sampleValues[(i*2)+1];
-        	
-        	avgDirection += direction;
-        	avgDistance += distance;
+        	        	
+        	if (distance > 0 && distance < 100) {
+        		avgDistance += distance;
+            	avgDirection += direction;
+            	count ++;
+        	}
 		}
 		
-		//get average (divide by (size*2) - since each beacon gives 2 values)
-		avgDirection /= sampleValues.length / 2;
-		avgDistance /= sampleValues.length / 2;
+		avgDirection /= count;
+		avgDistance /= count;
 		
 		
 		return new AveragePoint(avgDistance, avgDirection);
 	}
-	
 	
 	
 

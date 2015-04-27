@@ -1,4 +1,3 @@
-
 import lejos.hardware.Button;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.LCD;
@@ -24,9 +23,13 @@ public class RoboBoid {
     
 	private RegulatedMotor motorLeft;
 	private RegulatedMotor motorRight;
+	
+	private int speedStraight;
     private int speedLeft;
     private int speedRight;
-
+    
+    private AveragePoint center;
+    private java.util.Random noise;
 	
 	public RoboBoid(){
 		
@@ -41,51 +44,63 @@ public class RoboBoid {
 	    
 		motorLeft = new EV3LargeRegulatedMotor(MotorPort.D);
 		motorRight = new EV3LargeRegulatedMotor(MotorPort.A);
-	    speedLeft = 300;  // value in degrees/sec, MAX=~ 900
+
+	    speedStraight = 300;// value in degrees/sec, MAX=~ 900
+	    speedLeft = 300;  
 	    speedRight = 300;
+	    
+	    noise = new java.util.Random(85271); //noise
 	}
 		
 		
 		
 
-    public void run(){
-    	    	
+    public void run(){   	    	
 		while(Button.getButtons() != Button.ID_ESCAPE){
 			
 			seek.fetchSample(sample, 0);
 	        
 	        average.fetchSample(sampleAvg, 0); // sounds helpful
 
-	    	AveragePoint center = worldModel.getCenterPoint(sampleAvg);
+	    	center = worldModel.getCenterPoint(sampleAvg);
+	    	float turnAngle = Math.abs(center.getAvgDirection()) * 10;
+	    	turnAngle = speedStraight - turnAngle;
+	    	
+	    	if (center.getAvgDirection() < 5) {
+	    		//turn right
+	    		speedLeft = speedStraight;
+	    		speedRight = (int)turnAngle;
+	    	}
+	    	else if (center.getAvgDirection() > 5) {
+	    		//turn left
+	    		speedLeft = (int)turnAngle;
+	    		speedRight = speedStraight;
+	    	}
+	    	else {
+	    		//move straight but add noise depending on the distance
+	    		
+				//noise at low distance ==> between -50 and 50 wheel speed
+    			speedLeft = (int)(speedStraight + (noise.nextFloat() * 100) - 50);
+    			speedRight = (int)(speedStraight + (noise.nextFloat() * 100) - 50);
+
+    			if (center.getAvgDistance() > 90) {
+	    			// the values from the sensors aren't that reliable, so I add some more noise
+	    			speedLeft += (int)((noise.nextFloat() * 100) - 50);
+	    			speedRight += (int)((noise.nextFloat() * 100) - 50);
+	    		}
+	    	}
+	    	
+	    	float distance = center.getAvgDistance();
+	    	
+	    	if(distance > 100){ distance = 100; }
+	        speedLeft = speedLeft + (int)(distance * 2.5);
+		    speedRight = speedRight + (int)(distance * 2.5);
 	        
-	        //TODO: use all iterations
-	        for (int i = 0; i < sample.length/2; i++) {
-	        	float direction = sample[i*2];
-	        	float distance = sample[(i*2)+1];
-	        	
-	        	//TODO: Add crazy math stuff here!!!
-	        	speedLeft = 250;
-		        speedRight = 250;
-	        	if(direction < -4.0) {
-	        		speedLeft = 300;
-			        speedRight = 100; 
-	        	}
-	        	if(direction > 4.0) {
-	        		speedLeft = 100;
-			        speedRight = 300; 
-	        	}
-	        	
-	        	if(distance > 10000){ distance = 0; }
-	        	if(distance > 100){ distance = 100; }
-	        	speedLeft = speedLeft + (int)(distance * 2.5);
-		        speedRight = speedRight + (int)(distance * 2.5);
-	        	
-	        }
 			
 	        motorLeft.setSpeed(speedLeft);
 	        motorRight.setSpeed(speedRight);
-	        motorLeft.forward();  // this method really seems necessary again
-	        motorRight.forward(); 
+	        //motorLeft.forward();  // this method really seems necessary again
+	        //motorRight.forward(); 
 		
 	        
 	        printSensorAndActuatorValues();
@@ -102,12 +117,17 @@ public class RoboBoid {
     
     public void printSensorAndActuatorValues(){    
 		LCD.clear();
-		LCD.drawString("IR Seeker ", 0, 0);
+		//LCD.drawString("IR Seeker ", 0, 0);
 		for (int i = 0; i < sample.length/2; i++) {
 			LCD.drawString(i+1+ ": " + sample[i*2] + ", " + sample[(i*2)+1], 0, 1 + i);
 		}
-		LCD.drawString("Motor Speed", 0, 6);
-		LCD.drawString("L: " + speedLeft + "  R: " + speedRight, 0, 7);
+		//LCD.drawString("Motor Speed", 0, 6);
+		//LCD.drawString("L: " + speedLeft + "  R: " + speedRight, 0, 7);
+		
+		if (center != null) {
+			LCD.drawInt((int)center.getAvgDirection(),0,6);
+			LCD.drawInt((int)center.getAvgDistance(), 0, 7);
+		}
 		
 		//LCD.refresh(); // do not use, not working well
 		//LCD.setAutoRefresh(true);
