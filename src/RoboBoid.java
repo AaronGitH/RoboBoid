@@ -108,13 +108,10 @@ public class RoboBoid {
 			
 	        motorLeft.setSpeed(speedLeft);
 	        motorRight.setSpeed(speedRight);
-<<<<<<< HEAD
-	        //motorLeft.forward();  // this method really seems necessary again
-	        //motorRight.forward(); 
-=======
+
 	        motorLeft.forward();  // this method really seems necessary again
 	        motorRight.forward(); 
->>>>>>> 44bcf05d22b15b3174b1021c7f93213cc6c9a911
+
 	        
             
 	        printSensorAndActuatorValues();
