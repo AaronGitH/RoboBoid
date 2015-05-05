@@ -64,17 +64,20 @@ public class RoboBoid {
 
 	    	center = worldModel.getCenterPoint(sampleAvg);
 	    	float turnAngle = Math.abs(center.getAvgDirection()) * 10;
-	    	turnAngle = speedStraight - turnAngle;
+	    	
+	    	//reduce it by turnAngle * 2 
+	    	// => make it turn faster if the central point is to the side of the robot
+	    	turnAngle = speedStraight - (turnAngle * 2);
 	    	
 	    	if (center.getAvgDirection() < 5) {
 	    		//turn right
-	    		speedLeft = speedStraight;
-	    		speedRight = (int)turnAngle;
+	    		speedRight = speedStraight;
+	    		speedLeft = (int)turnAngle;
 	    	}
 	    	else if (center.getAvgDirection() > 5) {
 	    		//turn left
-	    		speedLeft = (int)turnAngle;
-	    		speedRight = speedStraight;
+	    		speedRight = (int)turnAngle;
+	    		speedLeft = speedStraight;
 	    	}
 	    	else {
 	    		//move straight but add noise depending on the distance
@@ -99,9 +102,8 @@ public class RoboBoid {
 			
 	        motorLeft.setSpeed(speedLeft);
 	        motorRight.setSpeed(speedRight);
-	        //motorLeft.forward();  // this method really seems necessary again
-	        //motorRight.forward(); 
-		
+	        motorLeft.forward();  // this method really seems necessary again
+	        motorRight.forward(); 
 	        
 	        printSensorAndActuatorValues();
 			
