@@ -28,6 +28,8 @@ public class RoboBoid {
     private int speedLeft;
     private int speedRight;
     
+    private RobotSpeed robotSpeed;
+    
     private AveragePoint center;
     private java.util.Random noise;
 	
@@ -49,6 +51,8 @@ public class RoboBoid {
 	    speedLeft = 300;  
 	    speedRight = 300;
 	    
+	    robotSpeed = new RobotSpeed();
+	    
 	    noise = new java.util.Random(85271); //noise
 	}
 		
@@ -60,9 +64,11 @@ public class RoboBoid {
 			
 			seek.fetchSample(sample, 0);
 	        
-	        average.fetchSample(sampleAvg, 0); // sounds helpful
-
-	    	center = worldModel.getCenterPoint(sampleAvg);
+	        average.fetchSample(sampleAvg, 0);
+	        
+	        robotSpeed.setPositionOfAllRobots(sampleAvg);
+	        
+	        center = worldModel.getCenterPoint(sampleAvg);
 	    	float turnAngle = Math.abs(center.getAvgDirection()) * 10;
 	    	
 	    	//reduce it by turnAngle * 2 
@@ -102,9 +108,12 @@ public class RoboBoid {
 			
 	        motorLeft.setSpeed(speedLeft);
 	        motorRight.setSpeed(speedRight);
+
 	        motorLeft.forward();  // this method really seems necessary again
 	        motorRight.forward(); 
+
 	        
+            
 	        printSensorAndActuatorValues();
 			
 	        programFlow();
