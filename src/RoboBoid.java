@@ -75,13 +75,13 @@ public class RoboBoid {
 	    	// => make it turn faster if the central point is to the side of the robot
 	    	turnAngle = speedStraight - (turnAngle * 2);
 	    	
-	    	if (center.getAvgDirection() < 5) {
-	    		//turn right
+	    	if (center.getAvgDirection() < -5) {
+	    		//turn left
 	    		speedRight = speedStraight;
 	    		speedLeft = (int)turnAngle;
 	    	}
 	    	else if (center.getAvgDirection() > 5) {
-	    		//turn left
+	    		//turn right
 	    		speedRight = (int)turnAngle;
 	    		speedLeft = speedStraight;
 	    	}
