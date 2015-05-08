@@ -2,6 +2,7 @@ import lejos.hardware.Button;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.LCD;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
+import lejos.hardware.motor.Motor;
 import lejos.hardware.port.MotorPort;
 import lejos.hardware.port.Port;
 import lejos.hardware.sensor.EV3IRSensor;
@@ -9,6 +10,7 @@ import lejos.hardware.sensor.SensorModes;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.SampleProvider;
 import lejos.robotics.filter.MeanFilter;
+import lejos.robotics.navigation.DifferentialPilot;
 import lejos.utility.Delay;
 
 public class RoboBoid {
@@ -23,6 +25,7 @@ public class RoboBoid {
     
 	private RegulatedMotor motorLeft;
 	private RegulatedMotor motorRight;
+	private DifferentialPilot pilot;
 	
 	private int speedStraight;
     private int speedLeft;
@@ -46,6 +49,7 @@ public class RoboBoid {
 	    
 		motorLeft = new EV3LargeRegulatedMotor(MotorPort.D);
 		motorRight = new EV3LargeRegulatedMotor(MotorPort.A);
+		pilot = new DifferentialPilot(4.32f, 15f, motorLeft, motorRight);
 
 	    speedStraight = 300;// value in degrees/sec, MAX=~ 900
 	    speedLeft = 300;  
@@ -59,7 +63,18 @@ public class RoboBoid {
 		
 		
 
-    public void run(){   	    	
+    public void run(){  
+    	int count = 0;
+    	//pilot.setRobotSpeed(5);	
+    	pilot.travel(100);
+    	pilot.rotate(-90);
+    	pilot.travel(40);
+    	count ++;
+    	
+    	if (count > 0) {
+    		return;
+    	}
+    	
 		while(Button.getButtons() != Button.ID_ESCAPE){
 			
 			seek.fetchSample(sample, 0);
@@ -150,6 +165,7 @@ public class RoboBoid {
         motorRight.stop();
         motorLeft.close();
         motorRight.close();
+        pilot.stop();
     }
 
 }
