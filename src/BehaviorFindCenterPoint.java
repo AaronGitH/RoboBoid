@@ -1,6 +1,3 @@
-import java.io.Console;
-
-import lejos.ev3.tools.LCDDisplay;
 import lejos.hardware.lcd.LCD;
 import lejos.robotics.SampleProvider;
 import lejos.robotics.navigation.DifferentialPilot;
@@ -61,7 +58,6 @@ public class BehaviorFindCenterPoint implements Behavior {
 
 		for (int i = 0; i < sampleValues.length / 2; ++i) {
 
-			// TODO: Add checks for when values are out of range
 			float direction = sampleValues[i * 2];
 			float distance = sampleValues[(i * 2) + 1];
 
@@ -73,6 +69,7 @@ public class BehaviorFindCenterPoint implements Behavior {
 		}
 
 		if (count == 0) {
+			//there are no boids in the vicinity anymore
 			suppressed = true;
 			return;
 		}
