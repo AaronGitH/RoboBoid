@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 import lejos.hardware.lcd.LCD;
 import lejos.robotics.SampleProvider;
 import lejos.robotics.navigation.DifferentialPilot;
@@ -16,14 +19,111 @@ public class BehaviorAlignToNeighbours implements Behavior {
 	private DifferentialPilot pilot;
 	private SampleProvider provider;
 	private float[] sampleValues;
-	private float[] tempValues;
+	
+	private final int WHEEL_DIAMETER = 1;
+
+	private double[] currSpeedOfRobots = { 0, 0, 0, 0, 0, 0, 0, 0 };
+
+	// {robot1:direction,distance;robot2:direction,distance;...}
+	private double[] currPositionOfRobotsXY = { 0, 0, 0, 0, 0, 0, 0, 0 };
+	private double[] lastPositionOfRobotsXY = { 0, 0, 0, 0, 0, 0, 0, 0 };
+
+	private final long delayMillis = 1000;
+	private long lastMesurementTimestamp = 0;
 
 	public BehaviorAlignToNeighbours(DifferentialPilot pilot,
 			SampleProvider provider) {
 		this.pilot = pilot;
 		this.provider = provider;
 		this.sampleValues = new float[provider.sampleSize()];
-		this.tempValues = new float[provider.sampleSize()];
+	}
+
+	public void setPositionOfAllRobotsTimeInterval() {
+
+		if (System.currentTimeMillis() > lastMesurementTimestamp + delayMillis) {
+			lastMesurementTimestamp = System.currentTimeMillis();
+
+			for (int i = 0; i < sampleValues.length / 2; i++) {
+				double direction = sampleValues[i * 2];
+				double distance = sampleValues[(i * 2) + 1];
+
+				if (direction > -25 || direction < 25) {
+					currPositionOfRobotsXY[i * 2] = Double.POSITIVE_INFINITY;
+					currPositionOfRobotsXY[(i * 2) + 1] = 0;
+				}
+				else{
+				currPositionOfRobotsXY[i * 2] = (distance * Math.sin(direction));
+				currPositionOfRobotsXY[(i * 2) + 1] = (distance * Math
+						.cos(direction));
+				}
+			}
+
+			setSpeedOfAllRobots();
+
+			for (int i = 0; i < sampleValues.length; i++) {
+				lastPositionOfRobotsXY[i] = currPositionOfRobotsXY[i];
+			}
+		}
+	}
+
+	public void setSpeedOfAllRobots() {
+		
+		double currOrientation = pilot.getAngleIncrement();
+
+		double currX = pilot.getMovementIncrement()
+				* Math.sin(currOrientation);
+		double currY = pilot.getMovementIncrement()
+				* Math.cos(currOrientation);
+		double[] currCenterPoint = { currX, currY };
+		
+		// currPositionOfRobotsXYtranslatedToOldCartesianSystem
+		double[] translatedXY = new double[currPositionOfRobotsXY.length];
+		
+		for (int i = 0; i < currSpeedOfRobots.length / 2; i++) {
+
+			double[] robotXY = { lastPositionOfRobotsXY[i * 2],
+					lastPositionOfRobotsXY[(i * 2) + 1] };
+			double[] point =  CalculationUtility.translateManeuver(currCenterPoint,
+					currOrientation, robotXY);
+			
+			translatedXY[i * 2] = point[0];
+			translatedXY[(i * 2) + 1] = point[1];
+			
+			currSpeedOfRobots[i] = translatedXY[i * 2] - lastPositionOfRobotsXY[i * 2];
+			currSpeedOfRobots[i+1] = translatedXY[(i * 2) + 1] - lastPositionOfRobotsXY[(i * 2) + 1];
+		}
+		pilot.reset();
+	}
+
+	private void matchNeighbour() {
+		setPositionOfAllRobotsTimeInterval();
+		
+		List<Integer> robotsInSight = new ArrayList<Integer>();
+		for (int i = 0; i < currSpeedOfRobots.length / 2; i++) {
+			double direction = currPositionOfRobotsXY[i * 2];
+			double distance = currPositionOfRobotsXY[(i * 2) + 1];
+			if(distance < Float.POSITIVE_INFINITY && (direction > -25 || direction < 25)){
+					robotsInSight.add(i);
+			}			
+		}
+		int robotsInSightCounter = robotsInSight.size();
+		
+		double travelSpeed = 0;
+		while( !robotsInSight.isEmpty() ) {
+		    int robotId= robotsInSight.get(0);
+		    robotsInSight.remove(0);
+		    double x = currSpeedOfRobots[robotId * 2];
+		    double y = currSpeedOfRobots[(robotId * 2) + 1];
+		    travelSpeed += Math.sqrt( Math.pow(x, 2) + Math.pow(y, 2) );;
+		    
+		}
+		travelSpeed = travelSpeed / robotsInSightCounter;
+		travelSpeed = (pilot.getMovementIncrement() + travelSpeed) / 2;
+		
+		// TODO: define WHEEL_DIAMETER
+		pilot.setTravelSpeed(travelSpeed * WHEEL_DIAMETER); 
+		
+		suppressed = true;
 	}
 
 	@Override
@@ -36,8 +136,6 @@ public class BehaviorAlignToNeighbours implements Behavior {
 		 */
 		for (int i = 0; i < sampleValues.length / 2; ++i) {
 			float distance = sampleValues[(i * 2) + 1];
-
-			tempValues[i * 2] = sampleValues[i * 2];
 
 			// return TRUE as soon as at least 1 robot is found to be near
 			if (distance >= 0 && distance < 20) {
@@ -58,35 +156,6 @@ public class BehaviorAlignToNeighbours implements Behavior {
 		while (!suppressed) {
 			Thread.yield();
 		}
-	}
-
-	private void matchNeighbour() {
-		for (int i = 0; i < sampleValues.length / 2; ++i) {
-			tempValues[i * 2] = sampleValues[i * 2];
-		}
-
-		Delay.msDelay(1000);
-		provider.fetchSample(sampleValues, 0);
-
-		for (int i = 0; i < sampleValues.length / 2; ++i) {
-			LCD.drawString(i + ": " + tempValues[i * 2] + ", "
-					+ sampleValues[i * 2], 0, 3 + i);
-		}
-
-		// provider.fetchSample(sampleValues, 0); //fetch again first
-		//
-		// for (int i = 0; i < sampleValues.length / 2; ++i) {
-		//
-		// // TODO: Add checks for when values are out of range
-		// float direction = sampleValues[i * 2];
-		// float distance = sampleValues[(i * 2) + 1];
-		//
-		// if (distance >= 0 && distance < 20) {
-		//
-		// }
-		// }
-
-		suppressed = true;
 	}
 
 	@Override
