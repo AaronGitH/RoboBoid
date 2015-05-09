@@ -77,9 +77,24 @@ public class BehaviorFindCenterPoint implements Behavior {
 		avgDirection /= count;
 		avgDistance /= count;
 
+		
+		if (avgDirection >= 25) {
+			//take the distance into consideration
+			//:. the farther away, the less reliable the readings
+			//so increase the angle a bit if the distance is too far
+			
+			avgDirection *= 1 + (avgDistance / 200);
+			
+			//if distance = 60 
+			//Direction = 25 (of course)
+			//distance / 200 = 0.3
+			//direction = 25 * 1.3 = 32.5 degrees instead of 25
+			// THIS matches the excel table, MORE OR LESS~~
+		}
+		
 		LCD.clear(2);
 		LCD.drawInt((int) avgDistance, 0, 2);
-		pilot.rotate(avgDirection * 1.5);
+		pilot.rotate(avgDirection);
 		pilot.travel(avgDistance / 3);
 
 		suppressed = true;
