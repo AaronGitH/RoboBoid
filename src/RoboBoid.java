@@ -28,7 +28,7 @@ public class RoboBoid {
 	private RegulatedMotor motorRight;
 	private DifferentialPilot pilot;
 
-	private RobotSpeed robotSpeed;
+	//private RobotSpeed robotSpeed;
 
 	private AveragePoint center;
 
