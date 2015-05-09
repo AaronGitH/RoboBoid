@@ -11,7 +11,7 @@ import lejos.utility.Delay;
  * This class is the hardest to implement because of the many possible scenarios
  * The boid has to first identify that it is within close range on another boid
  * Then it must track the movement of the other boid to see where it is moving towards
- * And then match the same direction 
+ * And then match the same velocity
  */
 
 public class BehaviorAlignToNeighbours implements Behavior {
@@ -20,7 +20,8 @@ public class BehaviorAlignToNeighbours implements Behavior {
 	private SampleProvider provider;
 	private float[] sampleValues;
 	
-	private final int WHEEL_DIAMETER = 1;
+	private final double WHEEL_DIAMETER_cm = 4.32;
+	private final double SENSOR_DISTANCE_MAX = 90;
 
 	private double[] currSpeedOfRobots = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -47,7 +48,7 @@ public class BehaviorAlignToNeighbours implements Behavior {
 				double direction = sampleValues[i * 2];
 				double distance = sampleValues[(i * 2) + 1];
 
-				if (direction > -25 || direction < 25) {
+				if (direction < -25 || direction < 25) {
 					currPositionOfRobotsXY[i * 2] = Double.POSITIVE_INFINITY;
 					currPositionOfRobotsXY[(i * 2) + 1] = 0;
 				}
@@ -102,26 +103,29 @@ public class BehaviorAlignToNeighbours implements Behavior {
 		for (int i = 0; i < currSpeedOfRobots.length / 2; i++) {
 			double direction = currPositionOfRobotsXY[i * 2];
 			double distance = currPositionOfRobotsXY[(i * 2) + 1];
-			if(distance < Float.POSITIVE_INFINITY && (direction > -25 || direction < 25)){
+			if(distance < SENSOR_DISTANCE_MAX && (direction > -25 || direction < 25)){
 					robotsInSight.add(i);
 			}			
 		}
 		int robotsInSightCounter = robotsInSight.size();
 		
-		double travelSpeed = 0;
+		double travelDistance = 0;
 		while( !robotsInSight.isEmpty() ) {
 		    int robotId= robotsInSight.get(0);
 		    robotsInSight.remove(0);
 		    double x = currSpeedOfRobots[robotId * 2];
 		    double y = currSpeedOfRobots[(robotId * 2) + 1];
-		    travelSpeed += Math.sqrt( Math.pow(x, 2) + Math.pow(y, 2) );;
+		    travelDistance += Math.sqrt( Math.pow(x, 2) + Math.pow(y, 2) );;
 		    
 		}
-		travelSpeed = travelSpeed / robotsInSightCounter;
-		travelSpeed = (pilot.getMovementIncrement() + travelSpeed) / 2;
+		travelDistance = travelDistance / robotsInSightCounter;
+		travelDistance = (pilot.getMovementIncrement() + travelDistance) / 2;
 		
 		// TODO: define WHEEL_DIAMETER
-		pilot.setTravelSpeed(travelSpeed * WHEEL_DIAMETER); 
+		double travelDistancecentimeter = travelDistance / 2;
+		double travelSpeed = (travelDistancecentimeter / WHEEL_DIAMETER_cm) / (delayMillis/1000);
+		
+		pilot.setTravelSpeed(travelSpeed); 
 		
 		suppressed = true;
 	}
