@@ -129,7 +129,7 @@ public class BehaviorAlignToNeighbours implements Behavior {
 		
 		// TODO: define WHEEL_DIAMETER
 		double travelDistancecentimeter = travelDistance / 2;
-		double travelSpeed = (travelDistancecentimeter / WHEEL_DIAMETER_cm) / (delayMillis/1000);
+		double travelSpeed = (travelDistancecentimeter) / (delayMillis/1000);
 		
 		pilot.setTravelSpeed(travelSpeed); 
 		
