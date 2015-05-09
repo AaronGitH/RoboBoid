@@ -45,7 +45,7 @@ public class RoboBoid {
 
 		motorLeft = new EV3LargeRegulatedMotor(MotorPort.D);
 		motorRight = new EV3LargeRegulatedMotor(MotorPort.A);
-		pilot = new DifferentialPilot(4.32f, 15f, motorLeft, motorRight);
+		pilot = new DifferentialPilot(4.32f, 10.3f, motorLeft, motorRight);
 		pilot.setTravelSpeed(15);
 
 		robotSpeed = new RobotSpeed();
