@@ -11,17 +11,14 @@ public class BehaviorFindCenterPoint implements Behavior {
 	private DifferentialPilot pilot;
 	private SampleProvider provider;
 	private float[] sampleValues;
-	private java.util.Random noise;
 
 	private boolean suppressed;
-	private int count = 0;
 
 	public BehaviorFindCenterPoint(DifferentialPilot pilot,
 			SampleProvider provider) {
 		this.pilot = pilot;
 		this.provider = provider;
 		this.sampleValues = new float[provider.sampleSize()];
-		this.noise = new java.util.Random(85271); // noise
 	}
 
 	@Override
@@ -36,7 +33,7 @@ public class BehaviorFindCenterPoint implements Behavior {
 			float distance = sampleValues[(i * 2) + 1];
 
 			// return TRUE as soon as at least 1 robot is found to be near
-			if (distance > 15 && distance < 99) {
+			if (distance > 20 && distance < 99) {
 				return true;
 			}
 		}
@@ -68,7 +65,7 @@ public class BehaviorFindCenterPoint implements Behavior {
 			float direction = sampleValues[i * 2];
 			float distance = sampleValues[(i * 2) + 1];
 
-			if (distance > 15 && distance < 99) {
+			if (distance > 20 && distance < 99) {
 				avgDistance += distance;
 				avgDirection += direction;
 				count++;

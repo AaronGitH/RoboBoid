@@ -56,8 +56,9 @@ public class RoboBoid {
 		Behavior exitProgram = new BehaviorExitProgram();
 		Behavior moveForward = new BehaviorMoveForward(pilot);
 		Behavior findCenter = new BehaviorFindCenterPoint(pilot, average);
-
-		Behavior[] bArray = { moveForward, findCenter, exitProgram };
+		Behavior alignToNeighbour = new BehaviorAlignToNeighbours(pilot, average);
+		
+		Behavior[] bArray = { moveForward, findCenter, alignToNeighbour, exitProgram };
 		Arbitrator arby = new Arbitrator(bArray, false);
 		arby.start();
 
