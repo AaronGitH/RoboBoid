@@ -1,9 +1,11 @@
+/AveragePoint.class
 /BehaviorAlignToNeighbours.class
 /BehaviorExitProgram.class
 /BehaviorFindCenterPoint.class
 /BehaviorMoveForward.class
-/SensorValues.class
-/RobotSpeed.class
-/Calculation.class
-/CalculationUtil.class
 /CalculationUtility.class
+/Main.class
+/RoboBoid.class
+/RobotSpeed.class
+/SensorValues.class
+/WorldModel.class
