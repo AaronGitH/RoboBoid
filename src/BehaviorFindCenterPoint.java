@@ -41,6 +41,8 @@ public class BehaviorFindCenterPoint implements Behavior {
 	@Override
 	public void action() {
 		suppressed = false;
+		
+		pilot.setTravelSpeed(15);
 
 		LCD.clear(0);
 		LCD.drawString("Find Center", 0, 0);
