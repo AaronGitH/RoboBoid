@@ -22,7 +22,8 @@ public class BehaviorAlignToNeighbours implements Behavior {
 	
 	private final double WHEEL_DIAMETER_cm = 4.32;
 	private final double SENSOR_DISTANCE_MAX = 90;
-
+	private final double TURNRATE = 40;
+	
 	private double[] currSpeedOfRobots = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
 	// {robot1:direction,distance;robot2:direction,distance;...}
@@ -48,14 +49,14 @@ public class BehaviorAlignToNeighbours implements Behavior {
 				double direction = sampleValues[i * 2];
 				double distance = sampleValues[(i * 2) + 1];
 
-				if (direction < -25 || direction < 25) {
-					currPositionOfRobotsXY[i * 2] = Double.POSITIVE_INFINITY;
-					currPositionOfRobotsXY[(i * 2) + 1] = 0;
+				if (direction > -25 || direction < 25) {
+					currPositionOfRobotsXY[i * 2] = (distance * Math.sin(direction));
+					currPositionOfRobotsXY[(i * 2) + 1] = (distance * Math
+							.cos(direction));
 				}
 				else{
-				currPositionOfRobotsXY[i * 2] = (distance * Math.sin(direction));
-				currPositionOfRobotsXY[(i * 2) + 1] = (distance * Math
-						.cos(direction));
+					currPositionOfRobotsXY[i * 2] = Double.POSITIVE_INFINITY;
+					currPositionOfRobotsXY[(i * 2) + 1] = 0;
 				}
 			}
 
@@ -110,16 +111,21 @@ public class BehaviorAlignToNeighbours implements Behavior {
 		int robotsInSightCounter = robotsInSight.size();
 		
 		double travelDistance = 0;
+		double travelDirection = 0;  //avgAngle
+		
 		while( !robotsInSight.isEmpty() ) {
 		    int robotId= robotsInSight.get(0);
 		    robotsInSight.remove(0);
 		    double x = currSpeedOfRobots[robotId * 2];
 		    double y = currSpeedOfRobots[(robotId * 2) + 1];
-		    travelDistance += Math.sqrt( Math.pow(x, 2) + Math.pow(y, 2) );;
+		    travelDistance += Math.sqrt( Math.pow(x, 2) + Math.pow(y, 2) );
 		    
+		    travelDirection += Math.atan(y / x);
 		}
 		travelDistance = travelDistance / robotsInSightCounter;
 		travelDistance = (pilot.getMovementIncrement() + travelDistance) / 2;
+		
+		travelDirection = travelDirection / robotsInSightCounter;
 		
 		// TODO: define WHEEL_DIAMETER
 		double travelDistancecentimeter = travelDistance / 2;
@@ -127,6 +133,8 @@ public class BehaviorAlignToNeighbours implements Behavior {
 		
 		pilot.setTravelSpeed(travelSpeed); 
 		
+		pilot.steer(TURNRATE * (travelDirection / Math.abs(travelDirection) ) , travelDirection);
+
 		suppressed = true;
 	}
 
