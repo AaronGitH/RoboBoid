@@ -43,14 +43,13 @@ public class CalculationUtility {
 		double angle = Math.min(normalizeAngle2Pi(a - b), normalizeAngle2Pi(b - a));
 
 		if (isAngleInTolerance(orientationCurrent + angle, orientationTarget,
-				0.000000001))
+				0.000001))
 			return angle;
 		if (isAngleInTolerance(orientationCurrent - angle, orientationTarget,
-				0.000000001))
+				0.000001))
 			return -angle;
 
-		// raise ValueError("angle problems!")
-		return 0;
+		throw new RuntimeException("angle problems!");
 	}
 
 	// normAngle from 0 to 2 Pi

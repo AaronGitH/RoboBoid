@@ -28,8 +28,7 @@ public class RoboBoid {
 	private DifferentialPilot pilot;
 
 	//private RobotSpeed robotSpeed;
-
-	private AveragePoint center;
+	//private AveragePoint center;
 
 	public RoboBoid() {
 
@@ -57,43 +56,43 @@ public class RoboBoid {
 		Behavior findCenter = new BehaviorFindCenterPoint(pilot, average);
 		Behavior alignToNeighbour = new BehaviorAlignToNeighbours(pilot, average);
 		
-		Behavior[] bArray = { moveForward, findCenter, alignToNeighbour, exitProgram };
+		Behavior[] bArray = {moveForward, findCenter, alignToNeighbour, exitProgram };
 		Arbitrator arby = new Arbitrator(bArray, false);
 		arby.start();
 
 	}
 
-	public void programFlow() {
-		// TODO: this could be made more advanced (maybe)
-		Delay.msDelay(100);
-	}
-
-	public void printSensorAndActuatorValues() {
-		LCD.clear();
-		// LCD.drawString("IR Seeker ", 0, 0);
-		for (int i = 0; i < sample.length / 2; i++) {
-			LCD.drawString(i + 1 + ": " + sample[i * 2] + ", "
-					+ sample[(i * 2) + 1], 0, 1 + i);
-		}
-		// LCD.drawString("Motor Speed", 0, 6);
-		// LCD.drawString("L: " + speedLeft + "  R: " + speedRight, 0, 7);
-
-		if (center != null) {
-			LCD.drawInt((int) center.getAvgDirection(), 0, 6);
-			LCD.drawInt((int) center.getAvgDistance(), 0, 7);
-		}
-
-		// LCD.refresh(); // do not use, not working well
-		// LCD.setAutoRefresh(true);
-		// LCD.setAutoRefreshPeriod(1000);
-	}
-
-	public void close() {
-		pilot.stop();
-		motorLeft.stop();
-		motorRight.stop();
-		motorLeft.close();
-		motorRight.close();
-	}
+//	public void programFlow() {
+//		// TODO: this could be made more advanced (maybe)
+//		Delay.msDelay(100);
+//	}
+//
+//	public void printSensorAndActuatorValues() {
+//		LCD.clear();
+//		// LCD.drawString("IR Seeker ", 0, 0);
+//		for (int i = 0; i < sample.length / 2; i++) {
+//			LCD.drawString(i + 1 + ": " + sample[i * 2] + ", "
+//					+ sample[(i * 2) + 1], 0, 1 + i);
+//		}
+//		// LCD.drawString("Motor Speed", 0, 6);
+//		// LCD.drawString("L: " + speedLeft + "  R: " + speedRight, 0, 7);
+//
+//		if (center != null) {
+//			LCD.drawInt((int) center.getAvgDirection(), 0, 6);
+//			LCD.drawInt((int) center.getAvgDistance(), 0, 7);
+//		}
+//
+//		// LCD.refresh(); // do not use, not working well
+//		// LCD.setAutoRefresh(true);
+//		// LCD.setAutoRefreshPeriod(1000);
+//	}
+//
+//	public void close() {
+//		pilot.stop();
+//		motorLeft.stop();
+//		motorRight.stop();
+//		motorLeft.close();
+//		motorRight.close();
+//	}
 
 }
