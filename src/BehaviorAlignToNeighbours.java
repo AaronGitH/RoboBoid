@@ -5,7 +5,6 @@ import lejos.hardware.lcd.LCD;
 import lejos.robotics.SampleProvider;
 import lejos.robotics.navigation.DifferentialPilot;
 import lejos.robotics.subsumption.Behavior;
-import lejos.utility.Delay;
 
 /*
  * This class is the hardest to implement because of the many possible scenarios
@@ -19,19 +18,19 @@ public class BehaviorAlignToNeighbours implements Behavior {
 	private DifferentialPilot pilot;
 	private SampleProvider provider;
 	private float[] sampleValues;
-	
-	private final double WHEEL_DIAMETER_cm = 4.32;
+
+	// private final double WHEEL_DIAMETER_cm = 4.32;
 	private final double SENSOR_DISTANCE_MAX = 90;
+	private final double SENSOR_ANGLE_MAX = 25; // valid data
 	private final double TURNRATE = 40;
-	
+	private final long DELAY_MILLIS = 1000;
+	private long lastMesurementTimestamp = 0;
 	private double[] currSpeedOfRobots = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
 	// {robot1:direction,distance;robot2:direction,distance;...}
 	private double[] currPositionOfRobotsXY = { 0, 0, 0, 0, 0, 0, 0, 0 };
 	private double[] lastPositionOfRobotsXY = { 0, 0, 0, 0, 0, 0, 0, 0 };
-
-	private final long delayMillis = 1000;
-	private long lastMesurementTimestamp = 0;
+	
 
 	public BehaviorAlignToNeighbours(DifferentialPilot pilot,
 			SampleProvider provider) {
@@ -42,19 +41,20 @@ public class BehaviorAlignToNeighbours implements Behavior {
 
 	public void setPositionOfAllRobotsTimeInterval() {
 
-		if (System.currentTimeMillis() > lastMesurementTimestamp + delayMillis) {
+		if (System.currentTimeMillis() > lastMesurementTimestamp + DELAY_MILLIS) {
 			lastMesurementTimestamp = System.currentTimeMillis();
 
 			for (int i = 0; i < sampleValues.length / 2; i++) {
 				double direction = sampleValues[i * 2];
 				double distance = sampleValues[(i * 2) + 1];
 
-				if (direction > -25 || direction < 25) {
-					currPositionOfRobotsXY[i * 2] = (distance * Math.sin(direction));
+				if (direction > -SENSOR_ANGLE_MAX
+						|| direction < SENSOR_ANGLE_MAX) {
+					currPositionOfRobotsXY[i * 2] = (distance * Math
+							.sin(direction));
 					currPositionOfRobotsXY[(i * 2) + 1] = (distance * Math
 							.cos(direction));
-				}
-				else{
+				} else {
 					currPositionOfRobotsXY[i * 2] = Double.POSITIVE_INFINITY;
 					currPositionOfRobotsXY[(i * 2) + 1] = 0;
 				}
@@ -69,71 +69,75 @@ public class BehaviorAlignToNeighbours implements Behavior {
 	}
 
 	public void setSpeedOfAllRobots() {
-		
+
 		double currOrientation = pilot.getAngleIncrement();
 
-		double currX = pilot.getMovementIncrement()
-				* Math.sin(currOrientation);
-		double currY = pilot.getMovementIncrement()
-				* Math.cos(currOrientation);
+		double currX = pilot.getMovementIncrement() * Math.sin(currOrientation);
+		double currY = pilot.getMovementIncrement() * Math.cos(currOrientation);
 		double[] currCenterPoint = { currX, currY };
-		
+
 		// currPositionOfRobotsXYtranslatedToOldCartesianSystem
 		double[] translatedXY = new double[currPositionOfRobotsXY.length];
-		
+
 		for (int i = 0; i < currSpeedOfRobots.length / 2; i++) {
 
 			double[] robotXY = { lastPositionOfRobotsXY[i * 2],
 					lastPositionOfRobotsXY[(i * 2) + 1] };
-			double[] point =  CalculationUtility.translateManeuver(currCenterPoint,
-					currOrientation, robotXY);
-			
+			double[] point = CalculationUtility.translateManeuver(
+					currCenterPoint, currOrientation, robotXY);
+
 			translatedXY[i * 2] = point[0];
 			translatedXY[(i * 2) + 1] = point[1];
-			
-			currSpeedOfRobots[i] = translatedXY[i * 2] - lastPositionOfRobotsXY[i * 2];
-			currSpeedOfRobots[i+1] = translatedXY[(i * 2) + 1] - lastPositionOfRobotsXY[(i * 2) + 1];
+
+			currSpeedOfRobots[i] = translatedXY[i * 2]
+					- lastPositionOfRobotsXY[i * 2];
+			currSpeedOfRobots[i + 1] = translatedXY[(i * 2) + 1]
+					- lastPositionOfRobotsXY[(i * 2) + 1];
 		}
 		pilot.reset();
 	}
 
 	private void matchNeighbour() {
 		setPositionOfAllRobotsTimeInterval();
-		
+
 		List<Integer> robotsInSight = new ArrayList<Integer>();
 		for (int i = 0; i < currSpeedOfRobots.length / 2; i++) {
 			double direction = currPositionOfRobotsXY[i * 2];
 			double distance = currPositionOfRobotsXY[(i * 2) + 1];
-			if(distance < SENSOR_DISTANCE_MAX && (direction > -25 || direction < 25)){
-					robotsInSight.add(i);
-			}			
+			if (distance < SENSOR_DISTANCE_MAX
+					&& (direction > -SENSOR_ANGLE_MAX || direction < SENSOR_ANGLE_MAX)) {
+				robotsInSight.add(i);
+			}
 		}
 		int robotsInSightCounter = robotsInSight.size();
-		
+
 		double travelDistance = 0;
-		double travelDirection = 0;  //avgAngle
-		
-		while( !robotsInSight.isEmpty() ) {
-		    int robotId= robotsInSight.get(0);
-		    robotsInSight.remove(0);
-		    double x = currSpeedOfRobots[robotId * 2];
-		    double y = currSpeedOfRobots[(robotId * 2) + 1];
-		    travelDistance += Math.sqrt( Math.pow(x, 2) + Math.pow(y, 2) );
-		    
-		    travelDirection += Math.atan(y / x);
+		double travelDirection = 0; // avgAngle
+
+		while (!robotsInSight.isEmpty()) {
+			int robotId = robotsInSight.get(0);
+			robotsInSight.remove(0);
+			double x = currSpeedOfRobots[robotId * 2];
+			double y = currSpeedOfRobots[(robotId * 2) + 1];
+			travelDistance += Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+
+			travelDirection += Math.atan(y / x);
 		}
 		travelDistance = travelDistance / robotsInSightCounter;
 		travelDistance = (pilot.getMovementIncrement() + travelDistance) / 2;
-		
+
 		travelDirection = travelDirection / robotsInSightCounter;
-		
-		// TODO: define WHEEL_DIAMETER
+
 		double travelDistancecentimeter = travelDistance / 2;
-		double travelSpeed = (travelDistancecentimeter) / (delayMillis/1000);
+		double travelSpeed = (travelDistancecentimeter) / (DELAY_MILLIS / 1000);
+
+		LCD.drawString("Direction: "+ travelDirection + "    ", 0, 2);
+		LCD.drawString("Speed: "+ travelSpeed + "     ", 0, 3);
 		
-		pilot.setTravelSpeed(travelSpeed); 
-		
-		pilot.steer(TURNRATE * (travelDirection / Math.abs(travelDirection) ) , travelDirection);
+		pilot.setTravelSpeed(travelSpeed);
+
+		pilot.steer(TURNRATE * (travelDirection / Math.abs(travelDirection)),
+				travelDirection);
 
 		suppressed = true;
 	}

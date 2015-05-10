@@ -1,4 +1,3 @@
-import lejos.hardware.Button;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.LCD;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
@@ -28,7 +27,7 @@ public class RoboBoid {
 	private RegulatedMotor motorRight;
 	private DifferentialPilot pilot;
 
-	private RobotSpeed robotSpeed;
+	//private RobotSpeed robotSpeed;
 
 	private AveragePoint center;
 
@@ -48,7 +47,7 @@ public class RoboBoid {
 		pilot = new DifferentialPilot(4.32f, 10.3f, motorLeft, motorRight);
 		pilot.setTravelSpeed(15);
 
-		robotSpeed = new RobotSpeed();
+		//robotSpeed = new RobotSpeed();
 	}
 
 	public void run() {
