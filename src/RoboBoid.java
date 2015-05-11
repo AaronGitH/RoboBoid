@@ -1,5 +1,4 @@
 import lejos.hardware.ev3.LocalEV3;
-import lejos.hardware.lcd.LCD;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.port.MotorPort;
 import lejos.hardware.port.Port;
@@ -11,15 +10,14 @@ import lejos.robotics.filter.MeanFilter;
 import lejos.robotics.navigation.DifferentialPilot;
 import lejos.robotics.subsumption.Arbitrator;
 import lejos.robotics.subsumption.Behavior;
-import lejos.utility.Delay;
 
 public class RoboBoid {
 
 	private SampleProvider seek;
-	private float[] sample;
+	// private float[] sample;
 
 	private SampleProvider average;
-	private float[] sampleAvg;
+	// private float[] sampleAvg;
 
 	WorldModel worldModel = new WorldModel();
 
@@ -36,10 +34,10 @@ public class RoboBoid {
 		@SuppressWarnings("resource")
 		SensorModes sensor = new EV3IRSensor(port);
 		seek = sensor.getMode("Seek");
-		sample = new float[seek.sampleSize()];
+		// sample = new float[seek.sampleSize()];
 
 		average = new MeanFilter(seek, 5);
-		sampleAvg = new float[average.sampleSize()];
+		// sampleAvg = new float[average.sampleSize()];
 
 		motorLeft = new EV3LargeRegulatedMotor(MotorPort.D);
 		motorRight = new EV3LargeRegulatedMotor(MotorPort.A);
